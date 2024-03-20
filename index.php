@@ -3,8 +3,10 @@ session_start();
 require 'assets/partials/_functions.php';
 $conn = db_connect();
 
-if (!$conn)
+if (!$conn) {
     die("Connection Failed");
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -19,163 +21,6 @@ if (!$conn)
 </head>
 
 <body>
-    <?php
-
-    if (isset($_GET["booking_added"]) && !isset($_POST['pnr-search'])) {
-        if ($_GET["booking_added"]) {
-            echo '<div class="my-0 alert alert-success alert-dismissible fade show" role="alert">
-                <strong>Successful!</strong> Booking Added, your PNR is <span style="font-weight:bold; color: #272640;">' . $_GET["pnr"] . '</span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>';
-        } else {
-            // Show error alert
-            echo '<div class="my-0 alert alert-danger alert-dismissible fade show" role="alert">
-            <strong>Error!</strong> Booking already exists
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>';
-        }
-    }
-
-    if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["pnr-search"])) {
-        $pnr = $_POST["pnr"];
-
-        $sql = "SELECT * FROM bookings WHERE booking_id='$pnr'";
-        $result = mysqli_query($conn, $sql);
-
-        $num = mysqli_num_rows($result);
-
-        if ($num) {
-            $row = mysqli_fetch_assoc($result);
-            $route_id = $row["route_id"];
-            $customer_id = $row["customer_id"];
-
-            $customer_name = get_from_table($conn, "customers", "customer_id", $customer_id, "customer_name");
-
-            $customer_phone = get_from_table($conn, "customers", "customer_id", $customer_id, "customer_phone");
-
-            $customer_route = $row["customer_route"];
-            $booked_amount = $row["booked_amount"];
-
-            $booked_seat = $row["booked_seat"];
-            $booked_timing = $row["booking_created"];
-
-            $dep_date = get_from_table($conn, "routes", "route_id", $route_id, "route_dep_date");
-
-            $dep_time = get_from_table($conn, "routes", "route_id", $route_id, "route_dep_time");
-
-            $bus_no = get_from_table($conn, "routes", "route_id", $route_id, "bus_no");
-    ?>
-
-            <div class="alert alert-dark alert-dismissible fade show" role="alert">
-
-                <h4 class="alert-heading">Booking Information!</h4>
-                <p>
-                    <button class="btn btn-sm btn-success"><a href="assets/partials/_download.php?pnr=<?php echo $pnr; ?>" class="link-light">Download</a></button>
-                    <button class="btn btn-danger btn-sm" id="deleteBooking" data-bs-toggle="modal" data-bs-target="#deleteModal" data-pnr="<?php echo $pnr; ?>" data-seat="<?php echo $booked_seat; ?>" data-bus="<?php echo $bus_no; ?>">
-                        Delete
-                    </button>
-                </p>
-                <hr>
-                <p class="mb-0">
-                <ul class="pnr-details">
-                    <li>
-                        <strong>PNR : </strong>
-                        <?php echo $pnr; ?>
-                    </li>
-                    <li>
-                        <strong>Customer Name : </strong>
-                        <?php echo $customer_name; ?>
-                    </li>
-                    <li>
-                        <strong>Customer Phone : </strong>
-                        <?php echo $customer_phone; ?>
-                    </li>
-                    <li>
-                        <strong>Route : </strong>
-                        <?php echo $customer_route; ?>
-                    </li>
-                    <li>
-                        <strong>Bus Number : </strong>
-                        <?php echo $bus_no; ?>
-                    </li>
-                    <li>
-                        <strong>Booked Seat Number : </strong>
-                        <?php echo $booked_seat; ?>
-                    </li>
-                    <li>
-                        <strong>Departure Date : </strong>
-                        <?php echo $dep_date; ?>
-                    </li>
-                    <li>
-                        <strong>Departure Time : </strong>
-                        <?php echo $dep_time; ?>
-                    </li>
-                    <li>
-                        <strong>Booked Timing : </strong>
-                        <?php echo $booked_timing; ?>
-                    </li>
-
-                    </p>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        <?php } else {
-            echo '<div class="my-0 alert alert-danger alert-dismissible fade show" role="alert">
-                <strong>Error!</strong> Record Doesnt Exist
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>';
-        }
-
-        ?>
-
-    <?php }
-
-
-    // Delete Booking
-    if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["deleteBtn"])) {
-        $pnr = $_POST["id"];
-        $bus_no = $_POST["bus"];
-        $booked_seat = $_POST["booked_seat"];
-
-        $deleteSql = "DELETE FROM `bookings` WHERE `bookings`.`booking_id` = '$pnr'";
-
-        $deleteResult = mysqli_query($conn, $deleteSql);
-        $rowsAffected = mysqli_affected_rows($conn);
-        $messageStatus = "danger";
-        $messageInfo = "";
-        $messageHeading = "Error!";
-
-        if (!$rowsAffected) {
-            $messageInfo = "Record Doesn't Exist";
-        } elseif ($deleteResult) {
-            $messageStatus = "success";
-            $messageInfo = "Booking Details deleted";
-            $messageHeading = "Successfull!";
-
-            // Update the Seats table
-            $seats = get_from_table($conn, "seats", "bus_no", $bus_no, "seat_booked");
-
-            // Extract the seat no. that needs to be deleted
-            $booked_seat = $_POST["booked_seat"];
-
-            $seats = explode(",", $seats);
-            $idx = array_search($booked_seat, $seats);
-            array_splice($seats, $idx, 1);
-            $seats = implode(",", $seats);
-
-            $updateSeatSql = "UPDATE `seats` SET `seat_booked` = '$seats' WHERE `seats`.`bus_no` = '$bus_no';";
-            mysqli_query($conn, $updateSeatSql);
-        } else {
-
-            $messageInfo = "Your request could not be processed due to technical Issues from our part. We regret the inconvenience caused";
-        }
-
-        // Message
-        echo '<div class="my-0 alert alert-' . $messageStatus . ' alert-dismissible fade show" role="alert">
-                <strong>' . $messageHeading . '</strong> ' . $messageInfo . '
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>';
-    }
-    ?>
     <nav>
         <div class="logo">
             <h1>FOXH</h1>
@@ -188,7 +33,6 @@ if (!$conn)
             <li><a href="#">Blog</a></li>
             <li><a href="#">Contact</a></li>
             <li><a href="#pnr-enquiry" class="pnr nav-item">PNR Enquiry</a></li>
-
         </ul>
         <div class="account">
             <?php if (isset($_SESSION['user-id'])) : ?>
@@ -215,66 +59,26 @@ if (!$conn)
         </div>
         <div class="hero__right">
             <h1>Choose Your Ticket</h1>
-            <form action="ticket_booking.php" method="POSTT" class="search_form">
-                <input type="text" id="location" name="location" list="kenyan-towns" placeholder="Pickup Point">
+            <form action="ticket_booking.php" method="POST" class="search_form">
+                <input type="text" id="pickup" name="pickup" list="kenyan-towns" placeholder="Pickup Point">
                 <datalist id="kenyan-towns">
                     <option value="Nairobi">
                     <option value="Mombasa">
-                    <option value="Kisumu">
-                    <option value="Nakuru">
-                    <option value="Eldoret">
-                    <option value="Thika">
-                    <option value="Malindi">
-                    <option value="Kitale">
-                    <option value="Garissa">
-                    <option value="Kakamega">
-                    <option value="Nyeri">
-                    <option value="Meru">
-                    <option value="Kisii">
-                    <option value="Embu">
-                    <option value="Machakos">
-                    <option value="Voi">
-                    <option value="Bungoma">
-                    <option value="Kericho">
-                    <option value="Nanyuki">
-                    <option value="Lamu">
+                    <!-- Other options -->
                 </datalist>
-                <input type="text" id="location" name="location" list="kenyan-towns" placeholder="Dropping Point">
-                <datalist id="kenyan-towns">
-                    <option value="Nairobi">
-                    <option value="Mombasa">
-                    <option value="Kisumu">
-                    <option value="Nakuru">
-                    <option value="Eldoret">
-                    <option value="Thika">
-                    <option value="Malindi">
-                    <option value="Kitale">
-                    <option value="Garissa">
-                    <option value="Kakamega">
-                    <option value="Nyeri">
-                    <option value="Meru">
-                    <option value="Kisii">
-                    <option value="Embu">
-                    <option value="Machakos">
-                    <option value="Voi">
-                    <option value="Bungoma">
-                    <option value="Kericho">
-                    <option value="Nanyuki">
-                    <option value="Lamu">
-                </datalist>
+                <input type="text" id="dropoff" name="dropoff" list="kenyan-towns" placeholder="Dropping Point">
                 <label for="date">Choose The travelling date:</label>
-                <input type="date" placeholder="Departure Date">
-                <button> <span>Search bus</span><img src="./assets/search.png" alt=""></button>
+                <input type="date" name="departure_date" placeholder="Departure Date">
+                <button type="submit"> <span>Search bus</span><img src="./assets/search.png" alt=""></button>
             </form>
         </div>
     </div>
-
 
     <!-- PROCESS SECTION -->
 
     <section class="steps">
         <div class="title">
-            <h1>Get You Ticket With Just 3 Steps</h1>
+            <h1>Get Your Ticket With Just 3 Steps</h1>
             <small>Have a look at our popular reason. Why
                 you should choose your bus. Just a Bus and <br>
                 get a ticket for your great journey!
@@ -308,7 +112,7 @@ if (!$conn)
     <section class="amenities">
         <div class="title">
             <h1>Our Amenities</h1>
-            <small>Have a look at ouyr popular reason. Why
+            <small>Have a look at our popular reasons. Why
                 you should choose your bus. Just a Bus and <br>
                 get a ticket for your great journey!
             </small>
@@ -339,7 +143,7 @@ if (!$conn)
     <section class="testimonials">
         <div class="title">
             <h1>Our Testimonials</h1>
-            <small>Have a look at ouyr popular reason. Why
+            <small>Have a look at our popular reasons. Why
                 you should choose your bus. Just a Bus and <br>
                 get a ticket for your great journey!
             </small>
@@ -364,8 +168,7 @@ if (!$conn)
             <div class="testimonial">
                 <p>Lorem ipsum dolor sit amet consectetur
                     adipisicing elit. Velit rerum inventore
-                    commodi quasi, omnis deserunt
-                    recusandae numquam non vel magni.</p>
+                    commodi quasi, omnis deserunt                     recusandae numquam non vel magni.</p>
                 <img src="./assets/avatar5.jpg" alt="">
                 <span>Nicole Atieno</span>
             </div>
@@ -413,3 +216,4 @@ if (!$conn)
 </body>
 
 </html>
+
