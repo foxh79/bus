@@ -1,5 +1,5 @@
 <?php
-        session_start();
+session_start();
 require 'assets/partials/_functions.php';
 $conn = db_connect();
 
@@ -64,17 +64,14 @@ if (!$conn)
             $dep_time = get_from_table($conn, "routes", "route_id", $route_id, "route_dep_time");
 
             $bus_no = get_from_table($conn, "routes", "route_id", $route_id, "bus_no");
-            ?>
+    ?>
 
             <div class="alert alert-dark alert-dismissible fade show" role="alert">
 
                 <h4 class="alert-heading">Booking Information!</h4>
                 <p>
-                    <button class="btn btn-sm btn-success"><a href="assets/partials/_download.php?pnr=<?php echo $pnr; ?>"
-                            class="link-light">Download</a></button>
-                    <button class="btn btn-danger btn-sm" id="deleteBooking" data-bs-toggle="modal"
-                        data-bs-target="#deleteModal" data-pnr="<?php echo $pnr; ?>" data-seat="<?php echo $booked_seat; ?>"
-                        data-bus="<?php echo $bus_no; ?>">
+                    <button class="btn btn-sm btn-success"><a href="assets/partials/_download.php?pnr=<?php echo $pnr; ?>" class="link-light">Download</a></button>
+                    <button class="btn btn-danger btn-sm" id="deleteBooking" data-bs-toggle="modal" data-bs-target="#deleteModal" data-pnr="<?php echo $pnr; ?>" data-seat="<?php echo $booked_seat; ?>" data-bus="<?php echo $bus_no; ?>">
                         Delete
                     </button>
                 </p>
@@ -194,13 +191,13 @@ if (!$conn)
 
         </ul>
         <div class="account">
-    <?php if(isset($_SESSION['user-id'])): ?>
-        <li><a href="./account.php"><img style="width: 2rem;" src="./assets/user-profile-min.png" alt=""></a></li>
-    <?php else: ?>
-        <li><a href="./adminLogin.php">Admin Login</a></li>
-        <button class="button"><a href="./login.php">Sign In</a></button>
-    <?php endif; ?>
-</div>
+            <?php if (isset($_SESSION['user-id'])) : ?>
+                <li><a href="./account.php"><img style="width: 2rem;" src="./assets/user-profile-min.png" alt=""></a></li>
+            <?php else : ?>
+                <li><a href="./adminLogin.php">Admin Login</a></li>
+                <button class="button"><a href="./login.php">Sign In</a></button>
+            <?php endif; ?>
+        </div>
 
         <img src="./assets/bars.png" alt="" class="menu bars">
         <img src="./assets/x.png" alt="" class="menu x">
@@ -218,7 +215,7 @@ if (!$conn)
         </div>
         <div class="hero__right">
             <h1>Choose Your Ticket</h1>
-            <form action="ticket_booking.php" method="POSTT" class="search_form" >
+            <form action="ticket_booking.php" method="POSTT" class="search_form">
                 <input type="text" id="location" name="location" list="kenyan-towns" placeholder="Pickup Point">
                 <datalist id="kenyan-towns">
                     <option value="Nairobi">
