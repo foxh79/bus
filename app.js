@@ -1,4 +1,3 @@
-
 // account section js
 document.addEventListener("DOMContentLoaded", function () {
   const asideSpans = document.querySelectorAll('.aside__span');
