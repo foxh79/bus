@@ -18,7 +18,6 @@ SET time_zone = "+00:00";
 -- Database: `sbtbsphp`
 ------------------------------------------------------------
 -- Table structure for table `bookings`
---
 
 CREATE TABLE `bookings` (
   `id` int(100) NOT NULL,
