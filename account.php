@@ -4,7 +4,7 @@
     $conn = db_connect();
 
     if(!$conn)
-        die("Oh Shoot!! Connection Failed");
+        die("Oh no!! Connection Failed");
 
 if (!isset($_SESSION['user-id'])) {
     header('Location: login.php');
