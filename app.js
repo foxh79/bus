@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
           mainSections[index].style.display = 'block';
       });
   });
-
+  
   viewOrderLinks.forEach(link => {
       link.addEventListener('click', (event) => {
           event.preventDefault();
